@@ -2,10 +2,13 @@
 using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
 using ThroughputTest;
 
-var serviceProvider = new ServiceCollection()
-    .AddLogging((loggingBuilder) => loggingBuilder
+var serviceCollection = new ServiceCollection();
+serviceCollection
+        .AddLogging((loggingBuilder) => loggingBuilder
         .SetMinimumLevel(LogLevel.Trace)
         .AddSimpleConsole(options =>
         {
@@ -13,9 +16,17 @@ var serviceProvider = new ServiceCollection()
             options.TimestampFormat = "[hh:mm:ss] ";
         }))
     .AddSingleton<CliRunner>()
-    .AddSingleton<IPerformanceTaskFactory, PerformanceTaskFactory>()
-    .BuildServiceProvider();
+    .AddSingleton<IPerformanceTaskFactory, PerformanceTaskFactory>();
+    
 
+
+var meterProvider = Sdk.CreateMeterProviderBuilder()
+           .AddMeter(AppMeterProvider.MeterName)
+           .AddConsoleExporter()
+           .Build();
+
+
+var serviceProvider = serviceCollection.BuildServiceProvider();
 
 // Add this to your C# console app's Main method to give yourself
 // a CancellationToken that is canceled when the user hits Ctrl+C.

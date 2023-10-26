@@ -29,8 +29,6 @@ namespace ThroughputTest
                 }
                 
                 await Task.WhenAll(tasks);
-
-                await Task.Delay(50000, cancellationToken);
             }
             catch(TaskCanceledException) { }
         }

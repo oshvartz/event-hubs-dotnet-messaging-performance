@@ -4,6 +4,8 @@ using Azure.Messaging.EventHubs.Producer;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +16,18 @@ namespace ThroughputTest
     {
         private readonly EventHubProducerClient _eventHubProducerClient;
         private readonly ILogger<SenderTask> _logger;
+        private static readonly Counter<int> _successSendCounter;
+        private static readonly Counter<int> _failedSendCounter;
+        private static readonly Histogram<long> _sendDurationMs;
+
+        static SenderTask()
+        {
+            _successSendCounter = AppMeterProvider.AppMeter.CreateCounter<int>("success-send-count",
+           "SendCount", "Total number of succesful send messages");
+            _failedSendCounter = AppMeterProvider.AppMeter.CreateCounter<int>("fail-send-count",
+           "SendCount", "Total number of failed send messages");
+            _sendDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>("send-duration", "ms", "send events duration in millisecond");
+        }
 
         public SenderTask(CliOptions options, ILogger<SenderTask> logger) : base(options)
         {
@@ -40,10 +54,14 @@ namespace ThroughputTest
                 var eventsData = CreateEventsData(payload);
                 try
                 {
+                    var stopwatch = Stopwatch.StartNew();
                     await _eventHubProducerClient.SendAsync(eventsData, cancellationToken);
+                    _sendDurationMs.Record(stopwatch.ElapsedMilliseconds);
+                    _successSendCounter.Add(eventsData.Count());
                 }
                 catch(Exception ex) 
                 {
+                    _failedSendCounter.Add(eventsData.Count());
                     _logger.LogError(ex, "fail to send events");
                 }
             }
