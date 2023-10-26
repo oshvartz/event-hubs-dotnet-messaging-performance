@@ -13,6 +13,7 @@ var serviceProvider = new ServiceCollection()
             options.TimestampFormat = "[hh:mm:ss] ";
         }))
     .AddSingleton<CliRunner>()
+    .AddSingleton<IPerformanceTaskFactory, PerformanceTaskFactory>()
     .BuildServiceProvider();
 
 

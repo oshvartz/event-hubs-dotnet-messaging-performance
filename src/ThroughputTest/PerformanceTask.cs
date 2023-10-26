@@ -8,11 +8,11 @@ namespace ThroughputTest
 {
     public abstract class PerformanceTask
     {
-        protected readonly CliOptions cliOptions;
+        protected readonly CliOptions _options;
 
-        public PerformanceTask(CliOptions cliOptions)
+        public PerformanceTask(CliOptions options)
         {
-            this.cliOptions = cliOptions;
+            _options = options;
         }
 
         public abstract Task ExecuteAsync(CancellationToken cancellationToken);

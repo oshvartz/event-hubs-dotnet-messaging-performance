@@ -13,11 +13,11 @@ namespace ThroughputTest
         [Option('b', "message-size-bytes", Required = false, HelpText = "Bytes per message (default 1024)")]
         public int MessageSizeInBytes { get; set; } = 1024;
 
-        [Option('t', "send-batch-count", Required = false, HelpText = "Number of messages per batch (default 0, no batching)")]
-        public int SendBatchCount { get; set; } = 0;
+        [Option('t', "send-batch-count", Required = false, HelpText = "Number of messages per batch (default 1, no batching)")]
+        public int SendBatchCount { get; set; } = 1;
 
-        [Option('s', "sender-count", Required = false, HelpText = "Number of concurrent senders (default 1)")]
-        public int SenderCount { get; set; } = 1;
+        [Option('s', "sender-count", Required = false, HelpText = "Number of concurrent senders (default 0)")]
+        public int SenderCount { get; set; } = 0;
 
     }
 }

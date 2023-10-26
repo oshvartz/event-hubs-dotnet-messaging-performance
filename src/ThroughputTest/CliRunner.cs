@@ -21,7 +21,6 @@ namespace ThroughputTest
                 _logger.LogInformation("input Settings:{@options}", options);
                 var perfTasks = _performanceTaskFactory.CreatePerformanceTasks(options);
 
-
                 var tasks = new List<Task>();
 
                 foreach (var perfTask in perfTasks)
