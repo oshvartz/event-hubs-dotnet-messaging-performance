@@ -15,25 +15,12 @@ namespace ThroughputTest.ProcessorUtil
 {
     public class CustomProcessor : PluggableCheckpointStoreEventProcessor<EventProcessorPartition>
     {
-        private static readonly Counter<int> _successProcessCounter;
-        private static readonly Counter<int> _failedProcessCounter;
-        private static readonly Histogram<long> _processDurationMs;
         private readonly ILogger<CustomProcessor> _logger;
         private readonly int _processingTimeDurationMs;
         private readonly Counter<int> _successConsumerProcessCounter;
         private readonly Counter<int> _failedConsumerProcessCounter;
         private readonly Histogram<long> _processConsumerDurationMs;
         private readonly CheckpointWriter _checkpointWriter;
-
-        static CustomProcessor()
-        {
-            _successProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>("success-process-count",
-           "MessageCount", "Total number of succesful process messages");
-            _failedProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>("fail-process-count",
-           "MessageCount", "Total number of failed process messages");
-            _processDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>("process-duration", "ms", "process events duration in millisecond");
-        }
-
 
         public CustomProcessor(
             ILogger<CustomProcessor> logger,
@@ -54,11 +41,11 @@ namespace ThroughputTest.ProcessorUtil
         {
             _logger = logger;
             _processingTimeDurationMs = processingTimeDurationMs;
-            _successConsumerProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{consumerGroup}-success-process-count",
+            _successConsumerProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{eventHubName}-{consumerGroup}-success-process-count",
            "MessageCount", "Total number of succesful process messages");
-            _failedConsumerProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{consumerGroup}-fail-process-count",
+            _failedConsumerProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{eventHubName}-{consumerGroup}-fail-process-count",
            "MessageCount", "Total number of failed process messages");
-            _processConsumerDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>($"{consumerGroup}-process-duration", "ms", "process events duration in millisecond");
+            _processConsumerDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>($"{eventHubName}-{consumerGroup}-process-duration", "ms", "process events duration in millisecond");
             //TODO: add to setting
             _checkpointWriter = new CheckpointWriter(TimeSpan.FromMinutes(2), 700, this.UpdateCheckpointAsync);
         }
@@ -82,9 +69,7 @@ namespace ThroughputTest.ProcessorUtil
 
                 await Task.WhenAll(processTasks);
 
-                _processDurationMs.Record(processingSw.ElapsedMilliseconds);
                 _processConsumerDurationMs.Record(processingSw.ElapsedMilliseconds);
-                _successProcessCounter.Add(events.Count());
                 _successConsumerProcessCounter.Add(events.Count());
 
                 if (lastEvent != null)
@@ -107,7 +92,6 @@ namespace ThroughputTest.ProcessorUtil
                 //
                 // In this case, the partition processing task will fault and be restarted
                 // from the last recorded checkpoint.
-                _failedProcessCounter.Add(events.Count());
                 _failedConsumerProcessCounter.Add(events.Count());
                 _logger.LogError(ex, "Exception while processing events");
             }

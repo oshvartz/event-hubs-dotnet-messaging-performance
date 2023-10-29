@@ -16,32 +16,28 @@ namespace ThroughputTest
     {
         private readonly EventHubProducerClient _eventHubProducerClient;
         private readonly ILogger<SenderTask> _logger;
-        private static readonly Counter<int> _successSendCounter;
-        private static readonly Counter<int> _failedSendCounter;
-        private static readonly Histogram<long> _sendDurationMs;
-
-        static SenderTask()
-        {
-            _successSendCounter = AppMeterProvider.AppMeter.CreateCounter<int>("success-send-count",
-           "SendCount", "Total number of succesful send messages");
-            _failedSendCounter = AppMeterProvider.AppMeter.CreateCounter<int>("fail-send-count",
-           "SendCount", "Total number of failed send messages");
-            _sendDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>("send-duration", "ms", "send events duration in millisecond");
-        }
+        private readonly Counter<int> _successSendCounter;
+        private readonly Counter<int> _failedSendCounter;
+        private readonly Histogram<long> _sendDurationMs;
 
         public SenderTask(CliOptions options, ILogger<SenderTask> logger) : base(options)
         {
             _eventHubProducerClient = new EventHubProducerClient(options.ConnectionString, options.EventHubName);
             _logger = logger;
+            _successSendCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{options.EventHubName}-success-send-count",
+        "SendCount", "Total number of succesful send messages");
+            _failedSendCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{options.EventHubName}-fail-send-count",
+           "SendCount", "Total number of failed send messages");
+            _sendDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>($"{options.EventHubName}-send-duration", "ms", "send events duration in millisecond");
         }
 
         public override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             var payload = new byte[_options.MessageSizeInBytes];
             var tasks = new List<Task>(_options.SenderCount);
-            for (var i = 0; i < _options.SenderCount; i++) 
+            for (var i = 0; i < _options.SenderCount; i++)
             {
-                tasks.Add(StartSendingAsync(payload,cancellationToken));
+                tasks.Add(StartSendingAsync(payload, cancellationToken));
             }
 
             await Task.WhenAll(tasks);
@@ -49,7 +45,7 @@ namespace ThroughputTest
 
         private async Task StartSendingAsync(Byte[] payload, CancellationToken cancellationToken)
         {
-            while(!cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 var eventsData = CreateEventsData(payload);
                 try
@@ -59,7 +55,7 @@ namespace ThroughputTest
                     _sendDurationMs.Record(stopwatch.ElapsedMilliseconds);
                     _successSendCounter.Add(eventsData.Count());
                 }
-                catch(Exception ex) 
+                catch (Exception ex)
                 {
                     _failedSendCounter.Add(eventsData.Count());
                     _logger.LogError(ex, "fail to send events");
