@@ -9,6 +9,17 @@ This repo enables to run benchmarks of Azure Event Hubs
 
 ```
 
+## View Metrics
+Note:make sure you are running command as administrator
+install dotnet-counters:
+```
+  install dotnet-counters
+```
+execute dotnet-counters:
+```
+  dotnet-counters monitor -n ThroughputTest EventHub.ThroughputTest
+```
+
 # Example Usage
 ```
  TBD

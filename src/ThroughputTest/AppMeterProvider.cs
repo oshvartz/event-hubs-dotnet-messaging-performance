@@ -11,7 +11,8 @@ namespace ThroughputTest
     {
         public const string MeterName = "EventHub.ThroughputTest";
 
-        private static readonly Meter InternalMeter = new("EventHub.ThroughputTest", "1.0");
+        private static readonly Meter InternalMeter = new(MeterName, "1.0");
+
         public static Meter AppMeter => InternalMeter;
 
     }

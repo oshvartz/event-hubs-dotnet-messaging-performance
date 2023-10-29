@@ -18,7 +18,7 @@ namespace ThroughputTest
 
         public IEnumerable<PerformanceTask> CreatePerformanceTasks(CliOptions options)
         {
-            if (options.SenderCount > 0)
+           if (options.SenderCount > 0)
             {
                 yield return new SenderTask(options, _senderTaskLogger);
             }
