@@ -30,7 +30,7 @@ This repo enables to run benchmarks of Azure Event Hubs
 Note:make sure you are running command as administrator
 install dotnet-counters:
 ```
-  install dotnet-counters
+  dotnet tool install --global dotnet-counters
 ```
 execute dotnet-counters:
 ```
