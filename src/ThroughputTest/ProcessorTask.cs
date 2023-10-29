@@ -54,11 +54,12 @@ namespace ThroughputTest
                 // Stopping may take up to the length of time defined
                 // as the TryTimeout configured for the processor;
                 // By default, this is 60 seconds.
+                var tasks = new List<Task>();
                 foreach (var processor in _customProcessors)
                 {
-                    await processor.StopProcessingAsync();
+                    tasks.Add(processor.StopProcessingAsync());
                 }
-
+                await Task.WhenAll(tasks);
             }
         }
 
