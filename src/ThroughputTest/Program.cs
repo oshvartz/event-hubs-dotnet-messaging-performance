@@ -2,8 +2,6 @@
 using CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
 using ThroughputTest;
 
 var serviceCollection = new ServiceCollection();
@@ -18,14 +16,6 @@ serviceCollection
     .AddSingleton<CliRunner>()
     .AddSingleton<IPerformanceTaskFactory, PerformanceTaskFactory>();
     
-
-
-var meterProvider = Sdk.CreateMeterProviderBuilder()
-           .AddMeter(AppMeterProvider.MeterName)
-           .AddConsoleExporter()
-           .Build();
-
-
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
 // Add this to your C# console app's Main method to give yourself

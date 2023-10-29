@@ -23,6 +23,7 @@ namespace ThroughputTest.ProcessorUtil
         private readonly Counter<int> _successConsumerProcessCounter;
         private readonly Counter<int> _failedConsumerProcessCounter;
         private readonly Histogram<long> _processConsumerDurationMs;
+        private readonly CheckpointWriter _checkpointWriter;
 
         static CustomProcessor()
         {
@@ -58,6 +59,8 @@ namespace ThroughputTest.ProcessorUtil
             _failedConsumerProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{consumerGroup}-fail-process-count",
            "MessageCount", "Total number of failed process messages");
             _processConsumerDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>($"{consumerGroup}-process-duration", "ms", "process events duration in millisecond");
+            //TODO: add to setting
+            _checkpointWriter = new CheckpointWriter(TimeSpan.FromMinutes(2), 700, this.UpdateCheckpointAsync);
         }
 
         protected async override Task OnProcessingEventBatchAsync(
@@ -73,7 +76,7 @@ namespace ThroughputTest.ProcessorUtil
                 var processTasks = new List<Task>();
                 foreach (var currentEvent in events)
                 {
-                    processTasks.Add(ProcessEventAsync(events));
+                    processTasks.Add(ProcessEventAsync(events, cancellationToken));
                     lastEvent = currentEvent;
                 }
 
@@ -86,7 +89,7 @@ namespace ThroughputTest.ProcessorUtil
 
                 if (lastEvent != null)
                 {
-                    await UpdateCheckpointAsync(
+                    await _checkpointWriter.WriteCheckpointIfNeededAsync(
                         partition.PartitionId,
                         lastEvent.Offset,
                         lastEvent.SequenceNumber,
@@ -110,9 +113,9 @@ namespace ThroughputTest.ProcessorUtil
             }
         }
 
-        private async Task ProcessEventAsync(IEnumerable<EventData> events)
+        private async Task ProcessEventAsync(IEnumerable<EventData> events,CancellationToken cancellationToken)
         {
-            await Task.Delay(_processingTimeDurationMs);
+            await Task.Delay(_processingTimeDurationMs, cancellationToken);
         }
 
         protected override Task OnProcessingErrorAsync(
