@@ -20,6 +20,7 @@ namespace ThroughputTest.ProcessorUtil
         private readonly Counter<int> _successConsumerProcessCounter;
         private readonly Counter<int> _failedConsumerProcessCounter;
         private readonly Histogram<long> _processConsumerDurationMs;
+        private readonly Histogram<double> _totalTimeInQueueDurationMs;
         private readonly CheckpointWriter _checkpointWriter;
 
         public CustomProcessor(
@@ -46,6 +47,7 @@ namespace ThroughputTest.ProcessorUtil
             _failedConsumerProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{eventHubName}-{consumerGroup}-fail-process-count",
            "MessageCount", "Total number of failed process messages");
             _processConsumerDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>($"{eventHubName}-{consumerGroup}-process-duration", "ms", "process events duration in millisecond");
+            _totalTimeInQueueDurationMs = AppMeterProvider.AppMeter.CreateHistogram<double>($"{eventHubName}-{consumerGroup}-timeinqueue", "ms", "time in queue in millisecond");
             //TODO: add to setting
             _checkpointWriter = new CheckpointWriter(TimeSpan.FromMinutes(2), 700, this.UpdateCheckpointAsync);
         }
@@ -63,6 +65,7 @@ namespace ThroughputTest.ProcessorUtil
                 var processTasks = new List<Task>();
                 foreach (var currentEvent in events)
                 {
+                    _totalTimeInQueueDurationMs.Record((DateTimeOffset.Now - currentEvent.EnqueuedTime).TotalMilliseconds);
                     processTasks.Add(ProcessEventAsync(events, cancellationToken));
                     lastEvent = currentEvent;
                 }
