@@ -49,3 +49,9 @@ Note:make sure you are running command as administrator
  ThroughputTest -C "Endpoint=...." -N theEventhubName -s 3 -c counsumer1 counsumer2 -S \"DefaultEndpointsProtocol=https;AccountName=..." -B TheContainerName -r 5 -w 100
 ```
 
+# Roadmap features
+
+- [X] Integration of System.Diagnostics Metrics
+- [ ] Open Telemtry integration - allow to get metrics using otel protocol
+- [ ] Add paramters to control consumers configuration such as PrefetchCount and PrefetchSizeInBytes
+- [ ] Add paramters to control CheckpointWriter configuration: WaitingInterval and messagesCountCheckpointThreshold

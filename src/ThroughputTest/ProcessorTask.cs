@@ -1,5 +1,6 @@
 ﻿using Azure.Core;
 using Azure.Messaging.EventHubs;
+using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Producer;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
@@ -28,7 +29,9 @@ namespace ThroughputTest
                                 consumerGroup,
                                 options.ConnectionString,
                                 options.EventHubName,
-                                options.ProcessingTimeDurationMs)).ToList();
+                                options.ProcessingTimeDurationMs,
+                                //we want to masure latecy so we are reading from the last event
+                                new Azure.Messaging.EventHubs.Primitives.EventProcessorOptions { DefaultStartingPosition = EventPosition.Latest})).ToList();
         }
 
         public async override Task ExecuteAsync(CancellationToken cancellationToken)
