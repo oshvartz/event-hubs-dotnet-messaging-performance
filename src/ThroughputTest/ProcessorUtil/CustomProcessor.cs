@@ -63,6 +63,11 @@ namespace ThroughputTest.ProcessorUtil
 
             try
             {
+                if(events?.Any() == false) 
+                {
+                    _logger.LogInformation("Empty Batch");
+                    return;
+                }
                 var processingSw = Stopwatch.StartNew();
                 var processTasks = new List<Task>();
                 foreach (var currentEvent in events)
