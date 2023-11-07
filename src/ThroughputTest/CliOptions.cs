@@ -25,6 +25,9 @@ namespace ThroughputTest
         [Option('r', "recieve-max-batch-size", Required = false, HelpText = "Max number of messages to read or process (default 1)")]
         public int RecieveMaxBatchSize { get; set; } = 1;
 
+        [Option('p', "recieve-prefetch-count", Required = false, HelpText = "Recieve Prefetch Count (default 300)")]
+        public int PrefetchCount { get; set; } = 300;
+
         [Option('w', "processing-duration-ms", Required = false, HelpText = "Processing time duration in millisecond (default is 0)")]
         public int ProcessingTimeDurationMs { get; set; } = 0;
 
