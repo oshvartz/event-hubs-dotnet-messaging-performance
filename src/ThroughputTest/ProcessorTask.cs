@@ -31,7 +31,7 @@ namespace ThroughputTest
                                 options.EventHubName,
                                 options.ProcessingTimeDurationMs,
                                 //we want to masure latecy so we are reading from the last event
-                                new Azure.Messaging.EventHubs.Primitives.EventProcessorOptions { DefaultStartingPosition = EventPosition.Latest})).ToList();
+                                new Azure.Messaging.EventHubs.Primitives.EventProcessorOptions { DefaultStartingPosition = EventPosition.Latest, MaximumWaitTime = null })).ToList();
         }
 
         public async override Task ExecuteAsync(CancellationToken cancellationToken)
