@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.Metrics;
 using System.Diagnostics;
+using Microsoft.Extensions.Azure;
 
 namespace ThroughputTest.ProcessorUtil
 {
@@ -18,11 +19,13 @@ namespace ThroughputTest.ProcessorUtil
         private readonly ILogger<CustomProcessor> _logger;
         private readonly int _processingTimeDurationMs;
         private readonly Counter<int> _successConsumerProcessCounter;
+        private readonly Counter<int> _maxBatchProcessCounter;
         private readonly Counter<int> _failedConsumerProcessCounter;
         private readonly Histogram<long> _processConsumerDurationMs;
         private readonly Histogram<double> _totalTimeInQueueDurationMs;
         private readonly Histogram<int> _RecievedBatchSize;
         private readonly CheckpointWriter _checkpointWriter;
+        private readonly int _eventBatchMaximumCount;
 
         public CustomProcessor(
             ILogger<CustomProcessor> logger,
@@ -45,6 +48,8 @@ namespace ThroughputTest.ProcessorUtil
             _processingTimeDurationMs = processingTimeDurationMs;
             _successConsumerProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{eventHubName}-{consumerGroup}-success-process-count",
            "MessageCount", "Total number of succesful process messages");
+            _maxBatchProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{eventHubName}-{consumerGroup}-max-batch-process-count",
+                "MessageCount", "Total number of processor that got max messages in batch");
             _failedConsumerProcessCounter = AppMeterProvider.AppMeter.CreateCounter<int>($"{eventHubName}-{consumerGroup}-fail-process-count",
            "MessageCount", "Total number of failed process messages");
             _processConsumerDurationMs = AppMeterProvider.AppMeter.CreateHistogram<long>($"{eventHubName}-{consumerGroup}-process-duration", "ms", "process events duration in millisecond");
@@ -52,6 +57,7 @@ namespace ThroughputTest.ProcessorUtil
             _RecievedBatchSize = AppMeterProvider.AppMeter.CreateHistogram<int>($"{eventHubName}-{consumerGroup}-recive-batchsize", "MessageCount", "Recieved batch size");
             //TODO: add to setting
             _checkpointWriter = new CheckpointWriter(TimeSpan.FromMinutes(2), 700, this.UpdateCheckpointAsync);
+            _eventBatchMaximumCount = eventBatchMaximumCount;
         }
 
         protected async override Task OnProcessingEventBatchAsync(
@@ -82,6 +88,10 @@ namespace ThroughputTest.ProcessorUtil
                 _processConsumerDurationMs.Record(processingSw.ElapsedMilliseconds);
                 _successConsumerProcessCounter.Add(events.Count());
                 _RecievedBatchSize.Record(events.Count());
+                if(_eventBatchMaximumCount == events.Count())
+                {
+                    _maxBatchProcessCounter.Add(1);
+                }
 
                 if (lastEvent != null)
                 {

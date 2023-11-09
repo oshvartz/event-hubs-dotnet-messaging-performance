@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Azure.Core.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.Diagnostics.Tracing;
 
 namespace ThroughputTest
 {
@@ -18,6 +20,8 @@ namespace ThroughputTest
         {
             try
             {
+                using var azureEventSourceListener = new AzureEventSourceListener((ea, m) => _logger.Log(ToLogLevel(ea.Level), m), EventLevel.Verbose);
+
                 _logger.LogInformation("input Settings:{@options}", options);
                 var perfTasks = _performanceTaskFactory.CreatePerformanceTasks(options);
 
@@ -32,5 +36,17 @@ namespace ThroughputTest
             }
             catch(TaskCanceledException) { }
         }
+
+        private LogLevel ToLogLevel(EventLevel level) =>  
+            level switch
+            {
+                EventLevel.Verbose => LogLevel.Trace,
+                EventLevel.Warning => LogLevel.Warning,
+                EventLevel.Informational => LogLevel.Information,
+                EventLevel.Error => LogLevel.Error,
+                EventLevel.Critical => LogLevel.Critical,
+                _ => LogLevel.Trace,
+
+            };
     }
 }
