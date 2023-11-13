@@ -4,7 +4,7 @@ This repo enables to run benchmarks of Azure Event Hubs - simulating load on eve
 
 ## Command Line arguments
 ```
-  -C, --connection-string            Required. event hubs namesapce connection string
+    -C, --connection-string            Required. event hubs namesapce connection string
 
   -N, --eventhub-name                Required. EventHub Name
 
@@ -17,6 +17,8 @@ This repo enables to run benchmarks of Azure Event Hubs - simulating load on eve
   -c, --consumer-groups              conusmer groups
 
   -r, --recieve-max-batch-size       Max number of messages to read or process (default 1)
+
+  -p, --recieve-prefetch-count       Recieve Prefetch Count (default 300)
 
   -w, --processing-duration-ms       Processing time duration in millisecond (default is 0)
 
