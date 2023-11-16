@@ -20,7 +20,8 @@ namespace ThroughputTest
         {
             try
             {
-                using var azureEventSourceListener = new AzureEventSourceListener((ea, m) => _logger.Log(ToLogLevel(ea.Level), m), EventLevel.Verbose);
+                //Enable this for diagnostics data of EH
+                //using var azureEventSourceListener = new AzureEventSourceListener((ea, m) => _logger.Log(ToLogLevel(ea.Level), m), EventLevel.Verbose);
 
                 _logger.LogInformation("input Settings:{@options}", options);
                 var perfTasks = _performanceTaskFactory.CreatePerformanceTasks(options);
