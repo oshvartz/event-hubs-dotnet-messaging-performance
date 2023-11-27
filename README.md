@@ -4,7 +4,7 @@ This repo enables to run benchmarks of Azure Event Hubs - simulating load on eve
 
 ## Command Line arguments
 ```
-    -C, --connection-string            Required. event hubs namesapce connection string
+  -C, --connection-string            Required. event hubs namesapce connection string
 
   -N, --eventhub-name                Required. EventHub Name
 
